@@ -16,7 +16,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   void _onTap(){
     setState(() {
-      _markers.add(Marker(markerId: MarkerId('id-current'),
+      _markers.add(const Marker(markerId: MarkerId('id-current'),
       position: LatLng(23.3, 22.2)));
     });
   }
@@ -24,14 +24,14 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
   void _onMapCreated(GoogleMapController googleMapController){
     setState(() {
       _markers.add(
-        Marker(
+        const Marker(
             markerId: MarkerId('id-1'),
             position: LatLng(23.021290, 72.469429),
             infoWindow: InfoWindow(title: 'South Bopal'))
       );
     });
   }
-//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 token
+// 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 token
 
   @override
   void dispose()async{
@@ -44,12 +44,12 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Google Map"),
+        title: const Text("Google Map"),
       ),
       body: GoogleMap(
           onMapCreated: _onMapCreated,
           markers: _markers,
-          initialCameraPosition: CameraPosition(target: LatLng(23.021290, 72.469429),zoom: 15),),
+          initialCameraPosition: const CameraPosition(target: LatLng(23.021290, 72.469429),zoom: 15),),
       floatingActionButton: Align(
         alignment: Alignment.bottomCenter,
         child: FloatingActionButton(
@@ -62,12 +62,11 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
             _markers.clear();
             
-            _markers.add(Marker(markerId: MarkerId("Current Location"),
+            _markers.add(Marker(markerId: const MarkerId("Current Location"),
                 position: LatLng(position.latitude, position.longitude),
-                infoWindow: InfoWindow(title: "Softrefine Technology")));
+                infoWindow: const InfoWindow(title: "Softrefine Technology")));
 
             setState(() {
-
             });
             },
         child: Icon(Icons.navigation),),
@@ -80,12 +79,11 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    permission = await Geolocator.checkPermission();
 
     if(!serviceEnabled){
-      return Future.error("Location services are disabled");
+      permission = await Geolocator.requestPermission();
     }
-
-    permission = await Geolocator.checkPermission();
 
     if(permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
