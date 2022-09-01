@@ -12,7 +12,8 @@ class GoogleMapScreen extends StatefulWidget {
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
   Set<Marker> _markers = {};
   GoogleMapController? googleMapController;
-
+  bool serviceEnabled = false;
+  LocationPermission? permission;
 
   void _onTap(){
     setState(() {
@@ -41,6 +42,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _determinePosition();
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
