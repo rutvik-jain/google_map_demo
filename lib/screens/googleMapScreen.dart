@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,19 +11,13 @@ class GoogleMapScreen extends StatefulWidget {
 }
 
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
-  Set<Marker> _markers = {};
-  GoogleMapController? googleMapController;
+  final Set<Marker> _markers = {};
   bool serviceEnabled = false;
   LocationPermission? permission;
+  Completer<GoogleMapController> _controller = Completer();
 
-  void _onTap(){
-    setState(() {
-      _markers.add(const Marker(markerId: MarkerId('id-current'),
-      position: LatLng(23.3, 22.2)));
-    });
-  }
-
-  void _onMapCreated(GoogleMapController googleMapController){
+  void _onMapCreated(GoogleMapController controller){
+      _controller.complete(controller);
     setState(() {
       _markers.add(
         const Marker(
@@ -33,12 +28,6 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
     });
   }
 // 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 token
-
-  @override
-  void dispose()async{
-    googleMapController?.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,12 +47,13 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
           backgroundColor: Colors.blue,
             onPressed: () async {
             Position position = await _determinePosition();
+            final GoogleMapController controller = await _controller.future;
 
-            await googleMapController?.animateCamera(CameraUpdate.newCameraPosition(CameraPosition
+            await controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition
               (target: LatLng(position.latitude, position.longitude),zoom: 15)));
 
             _markers.clear();
-            
+
             _markers.add(Marker(markerId: const MarkerId("Current Location"),
                 position: LatLng(position.latitude, position.longitude),
                 infoWindow: const InfoWindow(title: "Softrefine Technology")));
@@ -71,12 +61,11 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
             setState(() {
             });
             },
-        child: Icon(Icons.navigation),),
+        child: const Icon(Icons.navigation),),
       ),
     );
   }
   Future<Position> _determinePosition() async {
-
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -100,8 +89,6 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
     }
 
     Position position = await Geolocator.getCurrentPosition();
-
     return position;
-
   }
 }
