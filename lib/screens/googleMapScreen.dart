@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -14,7 +15,10 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
   final Set<Marker> _markers = {};
   bool serviceEnabled = false;
   LocationPermission? permission;
-  Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _controller = Completer();
+  Map<PolylineId, Polyline> polylines = {};
+  List<LatLng> polylineCoordinates = [];
+  PolylinePoints polylinePoints = PolylinePoints();
 
   void _onMapCreated(GoogleMapController controller){
       _controller.complete(controller);
@@ -23,11 +27,35 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         const Marker(
             markerId: MarkerId('id-1'),
             position: LatLng(23.021290, 72.469429),
-            infoWindow: InfoWindow(title: 'South Bopal'))
+            infoWindow: InfoWindow(title: 'South Bopal')),
       );
+      _getPolyline();
     });
   }
 // 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 token
+
+  _addPolyLine() {
+    PolylineId id = PolylineId("poly");
+    Polyline polyline = Polyline(
+        polylineId: id, color: Colors.red, points: polylineCoordinates);
+    polylines[id] = polyline;
+    setState(() {});
+  }
+
+  _getPolyline() async {
+    Position position = await _determinePosition();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        'AIzaSyDoOa_zzYFLyOzgtadAsOpTvq280W5irUw',
+        PointLatLng(position.latitude, position.longitude),
+        const PointLatLng(23.021290, 72.469429),
+        travelMode: TravelMode.driving);
+    if (result.points.isNotEmpty) {
+      result.points.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    }
+    _addPolyLine();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +66,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
         title: const Text("Google Map"),
       ),
       body: GoogleMap(
+        polylines: Set<Polyline>.of(polylines.values),
           onMapCreated: _onMapCreated,
           markers: _markers,
           initialCameraPosition: const CameraPosition(target: LatLng(23.021290, 72.469429),zoom: 15),),
@@ -51,8 +80,6 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
             await controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition
               (target: LatLng(position.latitude, position.longitude),zoom: 15)));
-
-            _markers.clear();
 
             _markers.add(Marker(markerId: const MarkerId("Current Location"),
                 position: LatLng(position.latitude, position.longitude),
