@@ -58,8 +58,13 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     _determinePosition();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
